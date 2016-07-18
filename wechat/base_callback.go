@@ -16,10 +16,12 @@ const MSGTYPE_LINK = "link"
 const MSGTYPE_EVENT = "event"
 const MSGTYPE_MUSIC = "music"
 const MSGTYPE_NEWS = "news"
+const MSGTYPE_MPNEWS = "mpnews"
 const MSGTYPE_VOICE = "voice"
 const MSGTYPE_VIDEO = "video"
 const MSGTYPE_SHORTVIDEO = "shortvideo"
 const MSGTYPE_DUOKEFU = "transfer_customer_service"
+const MSGTYPE_WXCARD = "wxcard"
 
 
 const EVENT_SEND_MASS = "MASSSENDJOBFINISH"         //发送结果 - 高级群发完成

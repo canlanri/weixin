@@ -57,7 +57,7 @@ func (wx *Wechat) UpdateKF(account, nickname, password string) (err error) {
 	}
 
 	var result WechatErr
-	err = PostJSON(urlstr, &request, &result)
+	err = PostJSON(urlstr, request, &result)
 
 	return
 }
@@ -124,6 +124,215 @@ func (wx *Wechat) GetKFList() (list []KFInfo, err error) {
 	return
 }
 
+// 客服接口-发消息
 
+// 发送文本消息
+func (wx *Wechat) SendKFText(openid, text ,kf_account string) (err error) {
 
+	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
 
+	request := struct {
+		Touser  string `json:"touser"`
+		Msgtype string `json:"msgtype"`
+		Text    struct {
+			Content string `json:"content"`
+		} `json:"text"`
+	}{
+		Touser:  openid,
+		Msgtype: MSGTYPE_TEXT,
+	}
+
+	request.Text.Content = openid
+
+	var result WechatErr
+	err = PostJSON(urlstr, request, &result)
+	return
+}
+
+// 发送图片消息
+func (wx *Wechat) SendKFImage(openid, media_id string) (err error) {
+
+	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
+
+	request := struct {
+		Touser  string `json:"touser"`
+		Msgtype string `json:"msgtype"`
+		Image   struct {
+			MediaId string `json:"media_id"`
+		} `json:"image"`
+	}{
+		Touser:  openid,
+		Msgtype: MSGTYPE_TEXT,
+	}
+
+	request.Image.MediaId = media_id
+
+	var result WechatErr
+	err = PostJSON(urlstr, request, &result)
+	return
+}
+
+// 发送语音消息
+func (wx *Wechat) SendKFVoice(openid, media_id string) (err error) {
+
+	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
+
+	request := struct {
+		Touser  string `json:"touser"`
+		Msgtype string `json:"msgtype"`
+		Voice   struct {
+			MediaId string `json:"media_id"`
+		} `json:"voice"`
+	}{
+		Touser:  openid,
+		Msgtype: MSGTYPE_VOICE,
+	}
+
+	request.Voice.MediaId = media_id
+
+	var result WechatErr
+	err = PostJSON(urlstr, request, &result)
+	return
+}
+
+// 发送视频消息
+func (wx *Wechat) SendKFVideo(openid, media_id, thumb_media_id, title, description string) (err error) {
+
+	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
+
+	request := struct {
+		Touser  string `json:"touser"`
+		Msgtype string `json:"msgtype"`
+		Video   struct {
+			MediaId        string `json:"media_id"`
+			Thumb_media_id string `json:"thumb_media_id"`
+			Title          string `json:"title"`
+			Description    string `json:"description"`
+		} `json:"video"`
+	}{
+		Touser:  openid,
+		Msgtype: MSGTYPE_VIDEO,
+	}
+
+	request.Video.MediaId = media_id
+	request.Video.Thumb_media_id = thumb_media_id
+	request.Video.Title = title
+	request.Video.Description = description
+
+	var result WechatErr
+	err = PostJSON(urlstr, request, &result)
+	return
+}
+
+// 发送音乐消息
+func (wx *Wechat) SendKFMusic(openid, title, description, musicurl, hqmusicurl, thumb_media_id string) (err error) {
+
+	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
+
+	request := struct {
+		Touser  string `json:"touser"`
+		Msgtype string `json:"msgtype"`
+		Music   struct {
+			Title          string `json:"title"`
+			Description    string `json:"description"`
+			Musicurl       string `json:"musicurl"`
+			Hqmusicurl     string `json:"hqmusicurl"`
+			Thumb_media_id string `json:"thumb_media_id"`
+		} `json:"music"`
+	}{
+		Touser:  openid,
+		Msgtype: MSGTYPE_MUSIC,
+	}
+
+	request.Music.Title = title
+	request.Music.Description = description
+	request.Music.Musicurl = musicurl
+	request.Music.Hqmusicurl = hqmusicurl
+	request.Music.Thumb_media_id = thumb_media_id
+
+	var result WechatErr
+	err = PostJSON(urlstr, request, &result)
+	return
+}
+
+// 图文消息里的 Article
+type KFArticle struct {
+	Title       string `json:"title"`       // 图文消息标题
+	Description string `json:"description"` // 图文消息描述
+	PicURL      string `json:"picurl"`      // 图片链接, 支持JPG, PNG格式, 较好的效果为大图360*200, 小图200*200
+	URL         string `json:"url"`         // 点击图文消息跳转链接
+}
+
+// 发送图文消息（点击跳转到外链）
+// 图文消息条数限制在8条以内，注意，如果图文数超过8，则将会无响应。
+func (wx *Wechat) SendKFNews(openid string, KFArticles []KFArticle) (err error) {
+
+	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
+
+	request := struct {
+		Touser  string `json:"touser"`
+		Msgtype string `json:"msgtype"`
+		News    struct {
+			KFArticles []KFArticle `json:"articles"`
+		} `json:"news"`
+	}{
+		Touser:  openid,
+		Msgtype: MSGTYPE_NEWS,
+	}
+
+	request.News.KFArticles = KFArticles
+
+	var result WechatErr
+	err = PostJSON(urlstr, request, &result)
+	return
+}
+
+// 发送图文消息（点击跳转到图文消息页面）
+//  图文消息条数限制在8条以内，注意，如果图文数超过8，则将会无响应。
+func (wx *Wechat) SendKFMpnews(openid, media_id string) (err error) {
+
+	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
+
+	request := struct {
+		Touser  string `json:"touser"`
+		Msgtype string `json:"msgtype"`
+		Mpnews  struct {
+			MediaId string `json:"media_id"`
+		} `json:"mpnews"`
+	}{
+		Touser:  openid,
+		Msgtype: MSGTYPE_MPNEWS,
+	}
+
+	request.Mpnews.MediaId = media_id
+
+	var result WechatErr
+	err = PostJSON(urlstr, request, &result)
+	return
+}
+
+// 发送卡券
+// 特别注意客服消息接口投放卡券仅支持非自定义Code码的卡券
+func (wx *Wechat) SendKFWxcard(openid, card_id, card_ext string) (err error) {
+
+	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
+
+	request := struct {
+		Touser  string `json:"touser"`
+		Msgtype string `json:"msgtype"`
+		Wxcard  struct {
+			Card_id  string `json:"card_id"`
+			Card_ext string `json:"card_ext"`
+		} `json:"wxcard"`
+	}{
+		Touser:  openid,
+		Msgtype: MSGTYPE_WXCARD,
+	}
+
+	request.Wxcard.Card_id = card_id
+	request.Wxcard.Card_ext = card_ext
+
+	var result WechatErr
+	err = PostJSON(urlstr, request, &result)
+	return
+}

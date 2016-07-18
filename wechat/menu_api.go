@@ -265,7 +265,7 @@ type ButtonEx struct {
 
 	Value    string `json:"value,omitempty"`
 	NewsInfo struct {
-		Articles []Article `json:"list,omitempty"`
+		Articles []MArticle `json:"list,omitempty"`
 	} `json:"news_info"`
 
 	SubButton struct {
@@ -273,7 +273,7 @@ type ButtonEx struct {
 	} `json:"sub_button"`
 }
 
-type Article struct {
+type MArticle struct {
 	Title      string `json:"title,omitempty"`       // 图文消息的标题
 	Author     string `json:"author,omitempty"`      // 作者
 	Digest     string `json:"digest,omitempty"`      // 摘要

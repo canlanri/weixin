@@ -63,20 +63,20 @@ func (ctx *Context) getResponseMsgHeader(MsgType string) MsgHeader {
 }
 
 // 文本消息
-type Text struct {
+type RText struct {
 	MsgHeader
 	Content Cdata // 回复的消息内容(换行: 在content中能够换行, 微信客户端支持换行显示)
 }
 
 // http://mp.weixin.qq.com/wiki/1/6239b44c206cab9145b1d52c67e6c551.html
 func (ctx *Context) ResponseText(content string) error {
-	data := Text{MsgHeader: ctx.getResponseMsgHeader(MSGTYPE_TEXT)}
+	data := RText{MsgHeader: ctx.getResponseMsgHeader(MSGTYPE_TEXT)}
 	data.Content.Cdata = content
 	return ctx.responseWecaht(data)
 }
 
 // 图片消息
-type Image struct {
+type RImage struct {
 	MsgHeader
 	Image struct {
 		MediaId Cdata // 通过素材管理接口上传多媒体文件得到 MediaId
@@ -84,13 +84,13 @@ type Image struct {
 }
 
 func (ctx *Context) ResponseImage(mediaId string) error {
-	data := Image{MsgHeader: ctx.getResponseMsgHeader(MSGTYPE_IMAGE)}
+	data := RImage{MsgHeader: ctx.getResponseMsgHeader(MSGTYPE_IMAGE)}
 	data.Image.MediaId.Cdata = mediaId
 	return ctx.responseWecaht(data)
 }
 
 // 语音消息
-type Voice struct {
+type RVoice struct {
 	MsgHeader
 	Voice struct {
 		MediaId Cdata // 通过素材管理接口上传多媒体文件得到 MediaId
@@ -98,13 +98,13 @@ type Voice struct {
 }
 
 func (ctx *Context) ResponseVoice(mediaId string) error {
-	data := Voice{MsgHeader: ctx.getResponseMsgHeader(MSGTYPE_VOICE)}
+	data := RVoice{MsgHeader: ctx.getResponseMsgHeader(MSGTYPE_VOICE)}
 	data.Voice.MediaId.Cdata = mediaId
 	return ctx.responseWecaht(data)
 }
 
 // 视频消息
-type Video struct {
+type RVideo struct {
 	MsgHeader
 	Video struct {
 		MediaId     Cdata // 通过素材管理接口上传多媒体文件得到 MediaId
@@ -114,7 +114,7 @@ type Video struct {
 }
 
 func (ctx *Context) ResponseVideo(mediaId, title, description string) error {
-	data := Video{MsgHeader: ctx.getResponseMsgHeader(MSGTYPE_VIDEO)}
+	data := RVideo{MsgHeader: ctx.getResponseMsgHeader(MSGTYPE_VIDEO)}
 	data.Video.MediaId.Cdata = mediaId
 	data.Video.Title.Cdata = title
 	data.Video.Description.Cdata = description
@@ -122,7 +122,7 @@ func (ctx *Context) ResponseVideo(mediaId, title, description string) error {
 }
 
 // 音乐消息
-type Music struct {
+type RMusic struct {
 	MsgHeader
 	Music struct {
 		Title        Cdata // 音乐标题
@@ -134,7 +134,7 @@ type Music struct {
 }
 
 func (ctx *Context) ResponseMusic(title, description, musicURL, hqMusicURL, thumbMediaId string) error {
-	data := Music{MsgHeader: ctx.getResponseMsgHeader(MSGTYPE_MUSIC)}
+	data := RMusic{MsgHeader: ctx.getResponseMsgHeader(MSGTYPE_MUSIC)}
 	data.Music.Title.Cdata = title
 	data.Music.Description.Cdata = description
 	data.Music.MusicURL.Cdata = musicURL
@@ -151,7 +151,7 @@ type RArticle struct {
 	URL         Cdata // 点击图文消息跳转链接
 }
 
-func SetRArticle(title, description, picurl, url string) RArticle {
+func SetArticle(title, description, picurl, url string) RArticle {
 	a := RArticle{}
 	a.Title.Cdata = title
 	a.Description.Cdata = description
@@ -175,7 +175,7 @@ func (ctx *Context) ResponseNews(articles []RArticle) error {
 }
 
 // 将消息转发到多客服, 参见多客服模块
-type TransferCustomerService struct {
+type RTransferCustomerService struct {
 	MsgHeader
 	TransInfo struct {
 		KfAccount Cdata
@@ -189,7 +189,7 @@ func (ctx *Context) ResponseTransferCustomerService(kfAccount string) error {
 		data := ctx.getResponseMsgHeader(MSGTYPE_DUOKEFU)
 		return ctx.responseWecaht(data)
 	} else {
-		data := TransferCustomerService{MsgHeader: ctx.getResponseMsgHeader(MSGTYPE_DUOKEFU)}
+		data := RTransferCustomerService{MsgHeader: ctx.getResponseMsgHeader(MSGTYPE_DUOKEFU)}
 		data.TransInfo.KfAccount.Cdata = kfAccount
 		return ctx.responseWecaht(data)
 	}
