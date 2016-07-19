@@ -85,9 +85,10 @@ errcode 一般为整型，这里却返回了字符串
 
 // UploadHeadImage 上传客服头像
 // 头像图片文件必须是jpg格式，推荐使用640*640大小的图片以达到最佳效果
-func (wx *Wechat) UploadHeadImage(kfAccount, filePath string) (err error) {
+func (wx *Wechat) UploadKFHeadImage(kfAccount, filePath string) (err error) {
 
 	urlstr := fmt.Sprintf("%s/customservice/kfaccount/uploadheadimg?kf_account=%s&access_token=%s", wx.apiUrl, kfAccount, wx.accessToken)
+
 	var result WechatErr
 
 	multipartFormField := []MultipartFormField{
@@ -125,24 +126,34 @@ func (wx *Wechat) GetKFList() (list []KFInfo, err error) {
 }
 
 // 客服接口-发消息
+// 如果需要以某个客服帐号来发消息（在微信6.0.2及以上版本中显示自定义头像）则需在JSON数据包的后半部分加入kf_account
+type commonKFHeader struct {
+	Touser        string `json:"touser"`
+	Msgtype       string `json:"msgtype"`
+	CustomService struct {
+		KF_account string `json:"kf_account,omitempty"`
+	} `json:"customservice,omitempty"`
+}
 
 // 发送文本消息
-func (wx *Wechat) SendKFText(openid, text ,kf_account string) (err error) {
+func (wx *Wechat) SendKFText(openid, text, kf_account string) (err error) {
 
 	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
 
 	request := struct {
-		Touser  string `json:"touser"`
-		Msgtype string `json:"msgtype"`
-		Text    struct {
+		commonKFHeader
+		Text struct {
 			Content string `json:"content"`
 		} `json:"text"`
-	}{
-		Touser:  openid,
-		Msgtype: MSGTYPE_TEXT,
-	}
+	}{}
 
-	request.Text.Content = openid
+	request.Touser = openid
+	request.Msgtype = MSGTYPE_TEXT
+	request.Text.Content = text
+
+	if kf_account != "" {
+		request.CustomService.KF_account = kf_account
+	}
 
 	var result WechatErr
 	err = PostJSON(urlstr, request, &result)
@@ -150,22 +161,24 @@ func (wx *Wechat) SendKFText(openid, text ,kf_account string) (err error) {
 }
 
 // 发送图片消息
-func (wx *Wechat) SendKFImage(openid, media_id string) (err error) {
+func (wx *Wechat) SendKFImage(openid, media_id, kf_account string) (err error) {
 
 	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
 
 	request := struct {
-		Touser  string `json:"touser"`
-		Msgtype string `json:"msgtype"`
-		Image   struct {
+		commonKFHeader
+		Image struct {
 			MediaId string `json:"media_id"`
 		} `json:"image"`
-	}{
-		Touser:  openid,
-		Msgtype: MSGTYPE_TEXT,
-	}
+	}{}
 
+	request.Touser = openid
+	request.Msgtype = MSGTYPE_IMAGE
 	request.Image.MediaId = media_id
+
+	if kf_account != "" {
+		request.CustomService.KF_account = kf_account
+	}
 
 	var result WechatErr
 	err = PostJSON(urlstr, request, &result)
@@ -173,22 +186,24 @@ func (wx *Wechat) SendKFImage(openid, media_id string) (err error) {
 }
 
 // 发送语音消息
-func (wx *Wechat) SendKFVoice(openid, media_id string) (err error) {
+func (wx *Wechat) SendKFVoice(openid, media_id, kf_account string) (err error) {
 
 	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
 
 	request := struct {
-		Touser  string `json:"touser"`
-		Msgtype string `json:"msgtype"`
-		Voice   struct {
+		commonKFHeader
+		Voice struct {
 			MediaId string `json:"media_id"`
 		} `json:"voice"`
-	}{
-		Touser:  openid,
-		Msgtype: MSGTYPE_VOICE,
-	}
+	}{}
 
+	request.Touser = openid
+	request.Msgtype = MSGTYPE_VOICE
 	request.Voice.MediaId = media_id
+
+	if kf_account != "" {
+		request.CustomService.KF_account = kf_account
+	}
 
 	var result WechatErr
 	err = PostJSON(urlstr, request, &result)
@@ -196,28 +211,31 @@ func (wx *Wechat) SendKFVoice(openid, media_id string) (err error) {
 }
 
 // 发送视频消息
-func (wx *Wechat) SendKFVideo(openid, media_id, thumb_media_id, title, description string) (err error) {
+func (wx *Wechat) SendKFVideo(openid, media_id, thumb_media_id, title, description, kf_account string) (err error) {
 
 	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
 
 	request := struct {
-		Touser  string `json:"touser"`
-		Msgtype string `json:"msgtype"`
-		Video   struct {
+		commonKFHeader
+		Video struct {
 			MediaId        string `json:"media_id"`
 			Thumb_media_id string `json:"thumb_media_id"`
 			Title          string `json:"title"`
 			Description    string `json:"description"`
 		} `json:"video"`
-	}{
-		Touser:  openid,
-		Msgtype: MSGTYPE_VIDEO,
-	}
+	}{}
+
+	request.Touser = openid
+	request.Msgtype = MSGTYPE_VIDEO
 
 	request.Video.MediaId = media_id
 	request.Video.Thumb_media_id = thumb_media_id
 	request.Video.Title = title
 	request.Video.Description = description
+
+	if kf_account != "" {
+		request.CustomService.KF_account = kf_account
+	}
 
 	var result WechatErr
 	err = PostJSON(urlstr, request, &result)
@@ -225,30 +243,33 @@ func (wx *Wechat) SendKFVideo(openid, media_id, thumb_media_id, title, descripti
 }
 
 // 发送音乐消息
-func (wx *Wechat) SendKFMusic(openid, title, description, musicurl, hqmusicurl, thumb_media_id string) (err error) {
+func (wx *Wechat) SendKFMusic(openid, title, description, musicurl, hqmusicurl, thumb_media_id, kf_account string) (err error) {
 
 	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
 
 	request := struct {
-		Touser  string `json:"touser"`
-		Msgtype string `json:"msgtype"`
-		Music   struct {
+		commonKFHeader
+		Music struct {
 			Title          string `json:"title"`
 			Description    string `json:"description"`
 			Musicurl       string `json:"musicurl"`
 			Hqmusicurl     string `json:"hqmusicurl"`
 			Thumb_media_id string `json:"thumb_media_id"`
 		} `json:"music"`
-	}{
-		Touser:  openid,
-		Msgtype: MSGTYPE_MUSIC,
-	}
+	}{}
+
+	request.Touser = openid
+	request.Msgtype = MSGTYPE_MUSIC
 
 	request.Music.Title = title
 	request.Music.Description = description
 	request.Music.Musicurl = musicurl
 	request.Music.Hqmusicurl = hqmusicurl
 	request.Music.Thumb_media_id = thumb_media_id
+
+	if kf_account != "" {
+		request.CustomService.KF_account = kf_account
+	}
 
 	var result WechatErr
 	err = PostJSON(urlstr, request, &result)
@@ -265,22 +286,25 @@ type KFArticle struct {
 
 // 发送图文消息（点击跳转到外链）
 // 图文消息条数限制在8条以内，注意，如果图文数超过8，则将会无响应。
-func (wx *Wechat) SendKFNews(openid string, KFArticles []KFArticle) (err error) {
+func (wx *Wechat) SendKFNews(openid string, KFArticles []KFArticle, kf_account string) (err error) {
 
 	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
 
 	request := struct {
-		Touser  string `json:"touser"`
-		Msgtype string `json:"msgtype"`
-		News    struct {
+		commonKFHeader
+		News struct {
 			KFArticles []KFArticle `json:"articles"`
 		} `json:"news"`
-	}{
-		Touser:  openid,
-		Msgtype: MSGTYPE_NEWS,
-	}
+	}{}
+
+	request.Touser = openid
+	request.Msgtype = MSGTYPE_NEWS
 
 	request.News.KFArticles = KFArticles
+
+	if kf_account != "" {
+		request.CustomService.KF_account = kf_account
+	}
 
 	var result WechatErr
 	err = PostJSON(urlstr, request, &result)
@@ -289,22 +313,25 @@ func (wx *Wechat) SendKFNews(openid string, KFArticles []KFArticle) (err error) 
 
 // 发送图文消息（点击跳转到图文消息页面）
 //  图文消息条数限制在8条以内，注意，如果图文数超过8，则将会无响应。
-func (wx *Wechat) SendKFMpnews(openid, media_id string) (err error) {
+func (wx *Wechat) SendKFMpnews(openid, media_id, kf_account string) (err error) {
 
 	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
 
 	request := struct {
-		Touser  string `json:"touser"`
-		Msgtype string `json:"msgtype"`
-		Mpnews  struct {
+		commonKFHeader
+		Mpnews struct {
 			MediaId string `json:"media_id"`
 		} `json:"mpnews"`
-	}{
-		Touser:  openid,
-		Msgtype: MSGTYPE_MPNEWS,
-	}
+	}{}
+
+	request.Touser = openid
+	request.Msgtype = MSGTYPE_MPNEWS
 
 	request.Mpnews.MediaId = media_id
+
+	if kf_account != "" {
+		request.CustomService.KF_account = kf_account
+	}
 
 	var result WechatErr
 	err = PostJSON(urlstr, request, &result)
@@ -313,26 +340,72 @@ func (wx *Wechat) SendKFMpnews(openid, media_id string) (err error) {
 
 // 发送卡券
 // 特别注意客服消息接口投放卡券仅支持非自定义Code码的卡券
-func (wx *Wechat) SendKFWxcard(openid, card_id, card_ext string) (err error) {
+func (wx *Wechat) SendKFWxcard(openid, card_id, card_ext, kf_account string) (err error) {
 
 	urlstr := fmt.Sprintf("%s/cgi-bin/message/custom/send?access_token=%s", wx.apiUrl, wx.accessToken)
 
 	request := struct {
-		Touser  string `json:"touser"`
-		Msgtype string `json:"msgtype"`
-		Wxcard  struct {
+		commonKFHeader
+		Wxcard struct {
 			Card_id  string `json:"card_id"`
 			Card_ext string `json:"card_ext"`
 		} `json:"wxcard"`
-	}{
-		Touser:  openid,
-		Msgtype: MSGTYPE_WXCARD,
-	}
+	}{}
+
+	request.Touser = openid
+	request.Msgtype = MSGTYPE_WXCARD
 
 	request.Wxcard.Card_id = card_id
 	request.Wxcard.Card_ext = card_ext
 
+	if kf_account != "" {
+		request.CustomService.KF_account = kf_account
+	}
+
 	var result WechatErr
 	err = PostJSON(urlstr, request, &result)
 	return
+}
+
+// 高级群发接口
+// http://mp.weixin.qq.com/wiki/15/40b6865b893947b764e2de8e4a1fb55f.html
+
+//上传图文消息内的图片获取URL【订阅号与服务号认证后均可用】
+//请注意，本接口所上传的图片不占用公众号的素材库中图片数量的5000个的限制。图片仅支持jpg/png格式，大小必须在1MB以下。
+func (wx *Wechat) UploadMassImage(filePath string) (url string, err error) {
+
+	urlstr := fmt.Sprintf("%s/cgi-bin/media/uploadimg?access_token=%s", wx.apiUrl, wx.accessToken)
+
+	var result struct {
+		Url string `json:"url"`
+	}
+
+	multipartFormField := []MultipartFormField{
+		MultipartFormField{IsFile: true, Fieldname: "media", Value: filePath},
+	}
+
+	err = PostMultipartForm(urlstr, multipartFormField, &result)
+	if err != nil {
+		return
+	}
+
+	url = result.Url
+	return
+}
+
+//上传图文消息素材【订阅号与服务号认证后均可用】
+type MassNews struct { // 图文消息，一个图文消息支持1到8条图文
+	Thumb_media_id     string `json:"thumb_media_id"`     //图文消息缩略图的media_id，可以在基础支持-上传多媒体文件接口中获得
+	Author             string `json:"author"`             //图文消息的作者
+	Title              string `json:"title"`              //图文消息的标题
+	Content_source_url string `json:"content_source_url"` //在图文消息页面点击“阅读原文”后的页面
+	Content            string `json:"content"`            //文消息页面的内容，支持HTML标签。具备微信支付权限的公众号，可以使用a标签，其他公众号不能使用
+	Digest             string `json:"digest"`             //图文消息的描述
+	Show_cover_pic     string `json:"show_cover_pic"`     //是否显示封面，1为显示，0为不显示
+}
+
+type MassResponse struct {
+	Type       string `json:"type"`       //媒体文件类型，分别有图片（image）、语音（voice）、视频（video）和缩略图（thumb），次数为news，即图文消息
+	Media_id   string `json:"media_id"`   //媒体文件/图文消息上传后获取的唯一标识
+	Created_at string `json:"created_at"` //媒体文件上传时间
 }

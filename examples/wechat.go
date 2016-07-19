@@ -6,12 +6,9 @@ import (
 	"net/http"
 )
 
-var (
-	wx *wechat.Wechat
-)
 
 func main() {
-	wx = wechat.NewWechat("bjdgyc", "wx90be1dc3ca5b7e40", "c1da30ad71195b812e0facbe640951a3")
+	wx := wechat.NewWechat("bjdgyc", "wx90be1dc3ca5b7e40", "c1da30ad71195b812e0facbe640951a3")
 	//ip,_ := wx.GetCallbackIP()
 	//fmt.Println(ip)
 	//bu := wechat.Button{}
@@ -23,9 +20,6 @@ func main() {
 	//err := wx.CreateMenu(menu)
 	//fmt.Println(err)
 	//wx.GetMenu()
-
-	wx.UploadHeadImage("aaa",`E:\www\gopath\src\github.com\bjdgyc\weixin\README.md`)
-
 
 	//wx.SetEncodingAESKey("jWmYm7qr5nMoAUwZRjGtBxmz3KA1tkAj3ykkR6q2B2C")
 	//ctx := wx.NewContext(nil,nil)
@@ -45,21 +39,21 @@ func main() {
 	//ctx.ResponseNews(w)
 
 
-	http.HandleFunc("/", wx.CreateHandler(aaa))
+	http.HandleFunc("/", wx.CreateHandler(weixinHandler))
 	http.ListenAndServe(":8090", nil)
 
 }
 
-func aaa(ctx *wechat.Context, err error) {
+func weixinHandler(ctx *wechat.Context, err error) {
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	switch ctx.GetMsgType() {
-	//case wechat.MSGTYPE_TEXT:
-	//	fmt.Println(ctx.WXMsg.Content)
-	//	ctx.ResponseText("回复: " + ctx.WXMsg.Content.String())
+	case wechat.MSGTYPE_TEXT:
+		fmt.Println(ctx.WXMsg.Content)
+		ctx.ResponseText("回复: " + ctx.WXMsg.Content.String())
 	case wechat.MSGTYPE_EVENT:
 		fmt.Println(ctx.GetMsgEvent())
 		if ctx.GetMsgEvent() == wechat.EVENT_MENU_CLICK {
@@ -72,7 +66,6 @@ func aaa(ctx *wechat.Context, err error) {
 		fmt.Println("default")
 		a, _ := ctx.GetMessageVoice()
 		fmt.Println(a)
-
 	}
 
 }
