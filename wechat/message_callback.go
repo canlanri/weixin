@@ -224,10 +224,3 @@ func (ctx *Context) GetMessageLocationEvent() (res MessageLocationEvent, ok bool
 	}
 	return
 }
-
-
-
-
-
-
-

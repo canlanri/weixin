@@ -61,7 +61,7 @@ func RequestJSON(method, urlstr, bodyType string, bodyinterface, v interface{}) 
 	r := &WechatErr{}
 	err = json.Unmarshal(b, r)
 	if err != nil {
-		return fmt.Errorf("err:%s, json:%s",err,string(b))
+		return fmt.Errorf("err:%s, json:%s", err, string(b))
 	}
 
 	if r.ErrCode != ErrCodeOK {
@@ -77,7 +77,6 @@ func RequestJSON(method, urlstr, bodyType string, bodyinterface, v interface{}) 
 	//fmt.Println(v)
 	return err
 }
-
 
 type MultipartFormField struct {
 	IsFile    bool

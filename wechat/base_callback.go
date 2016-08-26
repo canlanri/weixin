@@ -23,7 +23,6 @@ const MSGTYPE_SHORTVIDEO = "shortvideo"
 const MSGTYPE_DUOKEFU = "transfer_customer_service"
 const MSGTYPE_WXCARD = "wxcard"
 
-
 const EVENT_SEND_MASS = "MASSSENDJOBFINISH"         //发送结果 - 高级群发完成
 const EVENT_SEND_TEMPLATE = "TEMPLATESENDJOBFINISH" //发送结果 - 模板消息发送结果
 const EVENT_KF_SEESION_CREATE = "kfcreatesession"   //多客服 - 接入会话
@@ -71,7 +70,6 @@ type EncryptMsg struct {
 	Encrypt    Cdata
 }
 
-
 // Context 是 Handler 处理消息(事件)的上下文环境. 非并发安全!
 type Context struct {
 	*Wechat
@@ -85,7 +83,7 @@ type Context struct {
 	// 回调请求 URL 的时间戳参数: timestamp
 	// 回调请求 URL 的随机数参数: nonce
 
-	MsgSigned      bool
+	MsgSigned     bool
 	MsgCiphertext []byte // 消息的密文文本
 	MsgPlaintext  []byte // 消息的明文文本, xml格式
 	WXMsg         *WXMsg // 消息

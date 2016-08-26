@@ -301,6 +301,3 @@ func (wx *Wechat) GetMenuInfo() (info MenuInfo, isMenuOpen bool, err error) {
 	isMenuOpen = result.IsMenuOpen
 	return
 }
-
-
-

@@ -29,10 +29,10 @@ type Wechat struct {
 
 func NewWechat(token, appid, appsecret string) *Wechat {
 	wx := &Wechat{
-		apiUrl:         API_URL,
-		token:          token,
-		appid:          appid,
-		appsecret:      appsecret,
+		apiUrl:    API_URL,
+		token:     token,
+		appid:     appid,
+		appsecret: appsecret,
 	}
 	wx.CheckToken()
 	return wx
@@ -77,8 +77,8 @@ func (wx *Wechat) getAccessToken(code string) (err error) {
 	urlstr := fmt.Sprintf("%s/cgi-bin/token?grant_type=%s&appid=%s&secret=%s", wx.apiUrl, code, wx.appid, wx.appsecret)
 
 	var result struct {
-		AccessToken string `json:"access_token"`
-		ExpiresIn   time.Duration  `json:"expires_in"`
+		AccessToken string        `json:"access_token"`
+		ExpiresIn   time.Duration `json:"expires_in"`
 	}
 
 	err = GetJSON(urlstr, &result)

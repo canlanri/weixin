@@ -6,7 +6,6 @@ import (
 	"net/http"
 )
 
-
 func main() {
 	wx := wechat.NewWechat("bjdgyc", "wx90be1dc3ca5b7e40", "c1da30ad71195b812e0facbe640951a3")
 	//ip,_ := wx.GetCallbackIP()
@@ -37,7 +36,6 @@ func main() {
 	//}
 	//
 	//ctx.ResponseNews(w)
-
 
 	http.HandleFunc("/", wx.CreateHandler(weixinHandler))
 	http.ListenAndServe(":8090", nil)
